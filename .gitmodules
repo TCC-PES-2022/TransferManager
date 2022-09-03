@@ -1,4 +1,4 @@
 [submodule "modules/atftp"]
 	path = modules/atftp
-	url = git@github.com:TCC-PES-2022/atftp.git
+	url = https://github.com/TCC-PES-2022/atftp.git
 	branch = libatftp
