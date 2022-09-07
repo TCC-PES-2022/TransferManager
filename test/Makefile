@@ -13,9 +13,6 @@ DEPS := transfermanager gtest
 TARGET_NAME := unity_test_tftp
 TARGET := $(BIN_PATH)/$(TARGET_NAME)
 
-INCFLAGS := $(addprefix -I, $(shell find $(MODULE_ROOT)/$(INCLUDE_PATH) -type d))
-INCFLAGS += -I$(GTEST_ROOT)/include -I$(DEP_PATH)/include
-
 # src files & obj files
 SRC := $(shell find $(SRC_PATH) -type f -name "*.cpp")
 OBJ := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
@@ -39,11 +36,11 @@ default: all
 
 # non-phony targets
 $(TARGET): $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) $(shell find $(MODULE_ROOT)/$(OBJ_PATH) -type f -name "*.o") \
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) \
 	$(LINKFLAGS) $(INCFLAGS) $(LDFLAGS) $(LDLIBS)
 
 transfermanager:
-	cd .. && make test
+	cd .. && make test && make install
 
 gtest:
 	cd $(GTEST_ROOT) && cmake --build . -j$(shell echo $$((`nproc`)))

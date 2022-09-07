@@ -2,7 +2,6 @@
 VERSION = 0.1
 
 GTEST_ROOT	:=./googletest/googletest
-MODULE_ROOT	:= ..
 DEP_PATH	:= /opt/fls
 
 CXX				?=
@@ -12,5 +11,6 @@ CXXFLAGS		+= -pthread
 CXXFLAGS 		+= -fprofile-arcs -ftest-coverage --coverage
 #CXXFLAGS 		+= -g -ggdb
 COBJFLAGS 		:= $(CXXFLAGS) -c
-LDFLAGS  		:= -L$(GTEST_ROOT)/lib -lgtest -L$(DEP_PATH)/lib -ltftp -ltftpd
-LDLIBS   		:= -lgcov -lpthread
+LDFLAGS  		:= -L$(GTEST_ROOT)/lib -L$(DEP_PATH)/lib
+LDLIBS   		:= -ltransfer -ltftp -ltftpd -lgtest -lgcov -lpthread
+INCFLAGS 		:= -I$(GTEST_ROOT)/include -I$(DEP_PATH)/include

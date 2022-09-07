@@ -12,10 +12,10 @@ CXX 		?=
 CXXFLAGS 	:= -Wall -Werror -std=c++11
 DBGFLAGS 	:= -g -ggdb
 TESTFLAGS 	:= -fprofile-arcs -ftest-coverage --coverage -lgcov
-#LINKFLAGS 	:= -shared
+LINKFLAGS 	:= -shared
 #LDFLAGS  	:= $(addprefix -L, $(basename $(DEP_PATH)))
 #LDLIBS   	:= -ltftp -ltftpd
 
-COBJFLAGS 	:= $(CXXFLAGS) -c
+COBJFLAGS 	:= $(CXXFLAGS) -c -fPIC
 test: COBJFLAGS 	+= $(TESTFLAGS)
 debug: COBJFLAGS 	+= $(DBGFLAGS)

@@ -1,9 +1,13 @@
 include config.mk
 
 # path macros
+BIN_PATH := bin
 OBJ_PATH := obj
 SRC_PATH := src
 INCLUDE_PATH := include
+
+TARGET_NAME := libtransfer.so
+TARGET := $(BIN_PATH)/$(TARGET_NAME)
 
 INCDIRS := $(addprefix -I,$(shell find $(INCLUDE_PATH) -type d -print))
 INCDIRS += $(addprefix -I,$(DEP_PATH)/include)
@@ -26,6 +30,9 @@ default: all
 $(DEPS): $@
 	cd modules/$@ && make -j$(shell echo $$((`nproc`))) && make install
 
+$(TARGET): $(OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) $(LINKFLAGS) $(INCDIRS) $(LDFLAGS) $(LDLIBS)
+
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	@echo "Compiling $<"
 	$(CXX) $(COBJFLAGS) -o $@ $< $(INCDIRS)
@@ -33,21 +40,21 @@ $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 # phony rules
 .PHONY: makedir
 makedir:
-	@mkdir -p $(OBJDIRS)
+	@mkdir -p $(OBJDIRS) $(BIN_PATH)
 
 .PHONY: all
-all: makedir $(DEPS) $(OBJ)
+all: makedir $(DEPS) $(TARGET)
 
 .PHONY: target
-target: makedir $(OBJ)
+target: makedir $(TARGET)
 
 .PHONY: test
-test: makedir $(OBJ)
+test: makedir $(TARGET)
 
 .PHONY: install
 install: all
-	mkdir -p $(INSTALL_PATH)/obj $(INSTALL_PATH)/include
-	cp -f $(OBJ) $(INSTALL_PATH)/obj
+	mkdir -p $(INSTALL_PATH)/lib $(INSTALL_PATH)/include
+	cp -f $(BIN_PATH)/*.so $(INSTALL_PATH)/lib
 	cp -f $(shell find $(INCLUDE_PATH) -type f -name "*.h") $(INSTALL_PATH)/include
 
 # TODO: remove only what we installed
