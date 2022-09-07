@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# CLion files
+.idea/
+
+# Test files
+*.gcda
+*.gcno
+*.txt
+*.png
+*.css
+*.info
+*.html
