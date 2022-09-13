@@ -1,7 +1,7 @@
 # version
 VERSION = 0.1
 
-GTEST_ROOT	:=./googletest/googletest
+GTEST_ROOT	:=./googletest
 DEP_PATH	:= /opt/fls
 
 CXX				?=

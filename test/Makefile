@@ -43,7 +43,7 @@ transfermanager:
 	cd .. && make test && make install
 
 gtest:
-	cd $(GTEST_ROOT) && cmake --build . -j$(shell echo $$((`nproc`)))
+	cd $(GTEST_ROOT) && cmake . && make -j$(shell echo $$((`nproc`)))
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	$(CXX) $(COBJFLAGS) -o $@ $< $(INCFLAGS)
