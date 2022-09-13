@@ -98,6 +98,10 @@ public:
             TftpSectionId *id
     ) override;
 
+    TftpServerOperationResult getClientIp(
+            std::string &ip
+    ) override;
+
     TftpServerOperationResult getSectionStatus(
             TftpServerSectionStatus *status
     ) override;

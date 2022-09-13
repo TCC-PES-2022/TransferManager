@@ -3,6 +3,7 @@
 //
 
 #include "TFTPServer.h"
+#include <arpa/inet.h>
 
 TFTPServer::TFTPServer() {
     if (create_tftpd_handler(&serverHandler) != TFTPD_OK) {
@@ -204,6 +205,22 @@ TftpServerOperationResult TFTPSection::getSectionId(
     }
 
     *id = sectionId;
+    return TftpServerOperationResult::TFTP_SERVER_OK;
+}
+
+TftpServerOperationResult TFTPSection::getClientIp(
+        std::string &ip)
+{
+    if (sectionHandler == nullptr) {
+        return TftpServerOperationResult::TFTP_SERVER_ERROR;
+    }
+
+    char clientIp[INET6_ADDRSTRLEN];
+    if (get_client_ip(sectionHandler, clientIp) != TFTPD_OK) {
+        return TftpServerOperationResult::TFTP_SERVER_ERROR;
+    }
+
+    ip = clientIp;
     return TftpServerOperationResult::TFTP_SERVER_OK;
 }
 

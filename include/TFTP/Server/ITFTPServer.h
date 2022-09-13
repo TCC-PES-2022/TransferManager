@@ -6,6 +6,7 @@
 #define ITFTPSERVER_H
 
 #include "tftpd_api.h"
+#include <string>
 
 /**
  * @brief Enum with possible return from interface functions.
@@ -240,6 +241,18 @@ public:
      */
     virtual TftpServerOperationResult getSectionId(
             TftpSectionId *id
+    ) = 0;
+
+    /**
+     * @brief Get client IP
+     *
+     * @param[out] ip the client IP.
+     *
+     * @return TFTP_SERVER_OK if success.
+     * @return TFTP_SERVER_ERROR otherwise.
+     */
+    virtual TftpServerOperationResult getClientIp(
+            std::string &ip
     ) = 0;
 
     /**

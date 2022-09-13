@@ -4,6 +4,8 @@
 #include "TFTPServer.h"
 
 #include <thread>
+#include <arpa/inet.h>
+#define SOCKADDR_PRINT_ADDR_LEN INET6_ADDRSTRLEN
 
 #define PORT 60907
 #define TIMEOUT 5
@@ -104,7 +106,8 @@ TEST(TFTPServer, ServerRegisterSectionFinishedCallback)
 
 typedef struct {
     SectionId sectionId;
-    int matchId;
+    std::string clientIp;
+    int matchSection;
     TftpServerSectionStatus status;
 } ClientDiskServerDiskCommunicationContext;
 
@@ -115,8 +118,11 @@ TftpServerOperationResult ClientDiskServerDiskCommunication_sectionStartedCbk (
     if (context != nullptr) {
         ClientDiskServerDiskCommunicationContext *ctx = (ClientDiskServerDiskCommunicationContext *)context;
         SectionId id;
+        std::string clientIp;
         sectionHandler->getSectionId(&id);
+        sectionHandler->getClientIp(clientIp);
         ctx->sectionId = id;
+        ctx->clientIp = clientIp;
         return TftpServerOperationResult::TFTP_SERVER_OK;
     }
     return TftpServerOperationResult::TFTP_SERVER_ERROR;
@@ -129,8 +135,10 @@ TftpServerOperationResult ClientDiskServerDiskCommunication_sectionFinishedCbk (
     if (context != nullptr) {
         ClientDiskServerDiskCommunicationContext *ctx = (ClientDiskServerDiskCommunicationContext *)context;
         SectionId id;
+        std::string clientIp;
         sectionHandler->getSectionId(&id);
-        ctx->matchId = ctx->sectionId == id;
+        sectionHandler->getClientIp(clientIp);
+        ctx->matchSection = (ctx->sectionId == id && ctx->clientIp == clientIp);
         sectionHandler->getSectionStatus(&ctx->status);
         return TftpServerOperationResult::TFTP_SERVER_OK;
     }
@@ -143,7 +151,7 @@ TEST(TFTPClientServer, ClientDiskServerDiskCommunication)
     ITFTPClient *client = new TFTPClient();
     ClientDiskServerDiskCommunicationContext context;
     context.sectionId = 0;
-    context.matchId = 0;
+    context.matchSection = 0;
     context.status = TftpServerSectionStatus::TFTP_SERVER_SECTION_UNDEFINED;
 
     server->setPort(PORT);
@@ -183,7 +191,7 @@ TEST(TFTPClientServer, ClientDiskServerDiskCommunication)
     delete client;
 
     ASSERT_STREQ(buffer, DISK_DISK_MSG);
-    ASSERT_EQ(context.matchId, 1);
+    ASSERT_EQ(context.matchSection, 1);
     ASSERT_EQ(context.status, TftpServerSectionStatus::TFTP_SERVER_SECTION_OK);
 }
 
