@@ -152,6 +152,7 @@ TftpdOperationResult TFTPServer::sectionFinishedCbk(
 }
 
 TftpdOperationResult TFTPServer::openFileCbk(
+        const TftpdSectionHandlerPtr section_handler,
         FILE **fd,
         char *filename,
         char* mode,
@@ -160,7 +161,8 @@ TftpdOperationResult TFTPServer::openFileCbk(
     if (context != NULL) {
         TFTPServer *server = (TFTPServer *) context;
         if (server->_openFileCallback != nullptr) {
-            server->_openFileCallback(fd, filename, mode, server->openFileCtx);
+            TFTPSection section(section_handler);
+            server->_openFileCallback(&section, fd, filename, mode, server->openFileCtx);
             return TFTPD_OK;
         } else {
             *fd = fopen(filename, mode);
@@ -171,13 +173,15 @@ TftpdOperationResult TFTPServer::openFileCbk(
 }
 
 TftpdOperationResult TFTPServer::closeFileCbk(
+        const TftpdSectionHandlerPtr section_handler,
         FILE *fd,
         void *context)
 {
     if (context != NULL) {
         TFTPServer *server = (TFTPServer *) context;
         if (server->_closeFileCallback != nullptr) {
-            server->_closeFileCallback(fd, server->closeFileCtx);
+            TFTPSection section(section_handler);
+            server->_closeFileCallback(&section, fd, server->closeFileCtx);
             return TFTPD_OK;
         } else {
             return fclose(fd) == 0 ? TFTPD_OK : TFTPD_ERROR;

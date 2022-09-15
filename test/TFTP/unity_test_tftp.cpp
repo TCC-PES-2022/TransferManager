@@ -233,10 +233,26 @@ TEST(TFTPClientServer, ClientMemoryServerDiskCommunication)
 }
 
 typedef struct {
+    SectionId sectionId;
     char buffer[BUFSIZE];
 } ClientMemoryServerMemoryCommunicationContext;
 
+TftpServerOperationResult ClientMemoryServerMemoryCommunicationContext_sectionStartedCbk (
+        ITFTPSection *sectionHandler,
+        void *context)
+{
+    if (context != nullptr) {
+        ClientMemoryServerMemoryCommunicationContext *ctx = (ClientMemoryServerMemoryCommunicationContext *)context;
+        SectionId id;
+        sectionHandler->getSectionId(&id);
+        ctx->sectionId = id;
+        return TftpServerOperationResult::TFTP_SERVER_OK;
+    }
+    return TftpServerOperationResult::TFTP_SERVER_ERROR;
+}
+
 TftpServerOperationResult ClientMemoryServerMemoryCommunication_openFileCbk (
+        ITFTPSection *sectionHandler,
         FILE **fd,
         char *filename,
         char* mode,
@@ -245,13 +261,19 @@ TftpServerOperationResult ClientMemoryServerMemoryCommunication_openFileCbk (
     if (context != nullptr) {
         ClientMemoryServerMemoryCommunicationContext *ctx =
                 (ClientMemoryServerMemoryCommunicationContext*)context;
-        *fd = fmemopen(ctx->buffer, BUFSIZE, mode);
+        SectionId id;
+        sectionHandler->getSectionId(&id);
+        if (ctx->sectionId == id) {
+            *fd = fmemopen(ctx->buffer, BUFSIZE, mode);
+            return TftpServerOperationResult::TFTP_SERVER_OK;
+        }
         return TftpServerOperationResult::TFTP_SERVER_OK;
     }
     return TftpServerOperationResult::TFTP_SERVER_ERROR;
 }
 
 TftpServerOperationResult ClientMemoryServerMemoryCommunication_closeFileCbk (
+        ITFTPSection *sectionHandler,
         FILE *fd,
         void *context)
 {
@@ -268,6 +290,8 @@ TEST(TFTPClientServer, ClientMemoryServerMemoryCommunication)
 
     server->setPort(PORT);
     server->setTimeout(TIMEOUT);
+    server->registerSectionStartedCallback(
+        ClientMemoryServerMemoryCommunicationContext_sectionStartedCbk, &context);
     server->registerOpenFileCallback(
         ClientMemoryServerMemoryCommunication_openFileCbk, &context);
     server->registerCloseFileCallback(

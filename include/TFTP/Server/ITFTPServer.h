@@ -77,6 +77,7 @@ typedef TftpServerOperationResult (*sectionFinishedCallback) (
  * If you open the file, you must close it. Use the
  * closeFileCallback() for that.
  *
+ * @param[in] sectionHandler the section handler.
  * @param[out] fd the file pointer to open.
  * @param[in] filename the name of the file to open.
  * @param[in] mode the mode to open the file in.
@@ -86,6 +87,7 @@ typedef TftpServerOperationResult (*sectionFinishedCallback) (
  * @return TFTP_SERVER_ERROR otherwise.
  */
 typedef TftpServerOperationResult (*openFileCallback) (
+        ITFTPSection *sectionHandler,
         FILE **fd,
         char *filename,
         char* mode,
@@ -97,6 +99,7 @@ typedef TftpServerOperationResult (*openFileCallback) (
  * the server needs to close a file. If you register
  * open_file_callback, register this callback too.
  *
+ * @param[in] sectionHandler the section handler.
  * @param[in] fd the file pointer to close.
  * @param[in] context the user context.
  *
@@ -104,6 +107,7 @@ typedef TftpServerOperationResult (*openFileCallback) (
  * @return TFTP_SERVER_ERROR otherwise.
  */
 typedef TftpServerOperationResult (*closeFileCallback) (
+        ITFTPSection *sectionHandler,
         FILE *fd,
         void *context
 );

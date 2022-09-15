@@ -60,6 +60,7 @@ private:
     );
 
     static TftpdOperationResult openFileCbk (
+            const TftpdSectionHandlerPtr section_handler,
             FILE **fd,
             char *filename,
             char *mode,
@@ -67,6 +68,7 @@ private:
     );
 
     static TftpdOperationResult closeFileCbk (
+            const TftpdSectionHandlerPtr section_handler,
             FILE *fd,
             void *context
     );
