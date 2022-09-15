@@ -13,4 +13,4 @@ CXXFLAGS 		+= -fprofile-arcs -ftest-coverage --coverage
 COBJFLAGS 		:= $(CXXFLAGS) -c
 LDFLAGS  		:= -L$(GTEST_ROOT)/lib -L$(DEP_PATH)/lib
 LDLIBS   		:= -ltransfer -ltftp -ltftpd -lgtest -lgcov -lpthread
-INCFLAGS 		:= -I$(GTEST_ROOT)/include -I$(DEP_PATH)/include
+INCFLAGS 		:= -I$(GTEST_ROOT)/googletest/include -I$(DEP_PATH)/include
