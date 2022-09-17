@@ -183,8 +183,10 @@ TftpdOperationResult TFTPServer::closeFileCbk(
             TFTPSection section(section_handler);
             server->_closeFileCallback(&section, fd, server->closeFileCtx);
             return TFTPD_OK;
-        } else {
+        } else if (fd != NULL) {
             return fclose(fd) == 0 ? TFTPD_OK : TFTPD_ERROR;
+        } else {
+            return TFTPD_ERROR;
         }
     }
     return TFTPD_ERROR;
