@@ -9,6 +9,7 @@
 
 #define PORT 60907
 #define TIMEOUT 5
+#define LOCALHOST "127.0.0.1"
 #define FILENAME_DISK_DISK_SEND "disk_disk_test_send.txt"
 #define FILENAME_DISK_DISK_RECEIVE "disk_disk_test_receive.txt"
 #define DISK_DISK_MSG "DISK DISK TEST"
@@ -33,7 +34,7 @@ TEST(TFTPClient, ClientCreation)
 TEST(TFTPClient, ClientSetConnection)
 {
     ITFTPClient *client = new TFTPClient();
-    TftpClientOperationResult result = client->setConnection("127.0.0.1", 69);
+    TftpClientOperationResult result = client->setConnection(LOCALHOST, PORT);
     ASSERT_EQ(TftpClientOperationResult::TFTP_CLIENT_OK, result);
     delete client;
 }
@@ -53,7 +54,7 @@ TEST(TFTPServer, ServerCreation)
 TEST(TFTPServer, ServerSetPort)
 {
     ITFTPServer *server = new TFTPServer();
-    TftpServerOperationResult result = server->setPort(69);
+    TftpServerOperationResult result = server->setPort(PORT);
     ASSERT_EQ(TftpServerOperationResult::TFTP_SERVER_OK, result);
     delete server;
 }
@@ -61,7 +62,7 @@ TEST(TFTPServer, ServerSetPort)
 TEST(TFTPServer, ServerSetTimeout)
 {
     ITFTPServer *server = new TFTPServer();
-    TftpServerOperationResult result = server->setTimeout(1000);
+    TftpServerOperationResult result = server->setTimeout(TIMEOUT);
     ASSERT_EQ(TftpServerOperationResult::TFTP_SERVER_OK, result);
     delete server;
 }
@@ -277,7 +278,10 @@ TftpServerOperationResult ClientMemoryServerMemoryCommunication_closeFileCbk (
         FILE *fd,
         void *context)
 {
-    fclose(fd);
+    if (fd != NULL) {
+        return fclose(fd) == 0 ? TftpServerOperationResult::TFTP_SERVER_OK :
+                                 TftpServerOperationResult::TFTP_SERVER_ERROR;
+    }
     return TftpServerOperationResult::TFTP_SERVER_OK;
 }
 
