@@ -51,6 +51,9 @@ target: makedir $(TARGET)
 .PHONY: test
 test: makedir $(TARGET)
 
+.PHONY: debug
+debug: makedir $(TARGET)
+
 .PHONY: install
 install: all
 	mkdir -p $(INSTALL_PATH)/lib $(INSTALL_PATH)/include
