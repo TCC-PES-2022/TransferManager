@@ -329,3 +329,38 @@ TEST(TFTPClientServer, ClientMemoryServerMemoryCommunication)
     ASSERT_STREQ(sendBuffer, context.buffer);
     ASSERT_STREQ(sendBuffer, MEM_MEM_MSG);
 }
+
+/*
+ *******************************************************************************
+ *                                    EXTRA                                    *
+ *******************************************************************************
+ */
+
+void *serverThread(void *arg)
+{
+    ITFTPServer *server = (ITFTPServer *)arg;
+    server->startListening();
+}
+
+TEST(TFTPExtra, StartStopServer)
+{
+    ITFTPServer *server = new TFTPServer();
+    server->setPort(PORT);
+    pthread_t serverThreadID;
+    pthread_create(&serverThreadID, NULL, serverThread, server);
+    sleep(TIMEOUT);
+    server->stopListening();
+    struct timespec ts;
+    if (clock_gettime(CLOCK_REALTIME, &ts) == -1) {
+        FAIL() << "clock_gettime() failed";
+    }
+    ts.tv_sec += TIMEOUT;
+    int s = pthread_timedjoin_np(serverThreadID, NULL, &ts);
+    delete server;
+
+    if (s != 0) {
+        FAIL() << "pthread_timedjoin_np() failed";
+    }
+    SUCCEED();
+}
+}
