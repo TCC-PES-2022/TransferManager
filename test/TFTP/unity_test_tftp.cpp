@@ -363,4 +363,36 @@ TEST(TFTPExtra, StartStopServer)
     }
     SUCCEED();
 }
+
+TEST(TFTPExtra, TwoServers)
+{
+    ITFTPServer *server1 = new TFTPServer();
+    server1->setPort(PORT);
+    pthread_t serverThreadID1;
+
+    ITFTPServer *server2 = new TFTPServer();
+    server2->setPort(PORT + 1);
+    pthread_t serverThreadID2;
+
+    pthread_create(&serverThreadID1, NULL, serverThread, server1);
+    pthread_create(&serverThreadID2, NULL, serverThread, server2);
+    sleep(TIMEOUT);
+    server1->stopListening();
+    server2->stopListening();
+
+    struct timespec ts;
+    if (clock_gettime(CLOCK_REALTIME, &ts) == -1) {
+        FAIL() << "clock_gettime() failed";
+    }
+    ts.tv_sec += TIMEOUT;
+    int s1 = pthread_timedjoin_np(serverThreadID1, NULL, &ts);
+    int s2 = pthread_timedjoin_np(serverThreadID2, NULL, &ts);
+
+    delete server1;
+    delete server2;
+
+    if (s1 != 0 || s2 != 0) {
+        FAIL() << "pthread_timedjoin_np() failed";
+    }
+    SUCCEED();
 }
