@@ -81,6 +81,9 @@ typedef TftpServerOperationResult (*sectionFinishedCallback) (
  * @param[out] fd the file pointer to open.
  * @param[in] filename the name of the file to open.
  * @param[in] mode the mode to open the file in.
+ * @param[out] bufferSize if a fmemopen is used, this parameter is set to the size
+ *                  of the buffer. If a normal fopen is used, this parameter
+ *                  is set to 0.
  * @param[in] context the user context.
  *
  * @return TFTP_SERVER_OK if success.
@@ -91,6 +94,7 @@ typedef TftpServerOperationResult (*openFileCallback) (
         FILE **fd,
         char *filename,
         char* mode,
+        size_t *bufferSize,
         void *context
 );
 

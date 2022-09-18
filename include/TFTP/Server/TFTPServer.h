@@ -64,6 +64,7 @@ private:
             FILE **fd,
             char *filename,
             char *mode,
+            size_t *fileSize,
             void *context
     );
 

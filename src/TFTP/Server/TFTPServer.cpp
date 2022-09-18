@@ -156,13 +156,15 @@ TftpdOperationResult TFTPServer::openFileCbk(
         FILE **fd,
         char *filename,
         char* mode,
+        size_t *bufferSize,
         void *context)
 {
     if (context != NULL) {
         TFTPServer *server = (TFTPServer *) context;
         if (server->_openFileCallback != nullptr) {
             TFTPSection section(section_handler);
-            server->_openFileCallback(&section, fd, filename, mode, server->openFileCtx);
+            server->_openFileCallback(&section, fd, filename, mode, bufferSize,
+                                      server->openFileCtx);
             return TFTPD_OK;
         } else {
             *fd = fopen(filename, mode);

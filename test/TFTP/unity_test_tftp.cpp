@@ -16,6 +16,7 @@
 #define FILENAME_MEM_DISK "mem_disk_test.txt"
 #define MEM_DISK_MSG "MEM DISK TEST"
 #define FILENAME_MEM_MEM "mem_mem_test.txt"
+#define FILENAME_MEM_MEM_SERIALIZED "mem_mem_serializer_test.txt"
 #define MEM_MEM_MSG "MEM MEM TEST"
 #define BUFSIZE 100
 
@@ -257,6 +258,7 @@ TftpServerOperationResult ClientMemoryServerMemoryCommunication_openFileCbk (
         FILE **fd,
         char *filename,
         char* mode,
+        size_t *fileSize,
         void *context)
 {
     if (context != nullptr) {
@@ -266,6 +268,9 @@ TftpServerOperationResult ClientMemoryServerMemoryCommunication_openFileCbk (
         sectionHandler->getSectionId(&id);
         if (ctx->sectionId == id) {
             *fd = fmemopen(ctx->buffer, BUFSIZE, mode);
+            if (fileSize != NULL) {
+                *fileSize = BUFSIZE;
+            }
             return TftpServerOperationResult::TFTP_SERVER_OK;
         }
         return TftpServerOperationResult::TFTP_SERVER_OK;
@@ -335,6 +340,63 @@ TEST(TFTPClientServer, ClientMemoryServerMemoryCommunication)
  *                                    EXTRA                                    *
  *******************************************************************************
  */
+
+TEST(TFTPClientServer, ClientMemoryServerMemoryCommunicationSerialized)
+{
+    ITFTPServer *server = new TFTPServer();
+    ITFTPClient *client = new TFTPClient();
+    ClientMemoryServerMemoryCommunicationContext context;
+    memset(context.buffer, 0, BUFSIZE);
+
+    server->setPort(PORT);
+    server->setTimeout(TIMEOUT);
+    server->registerSectionStartedCallback(
+            ClientMemoryServerMemoryCommunicationContext_sectionStartedCbk, &context);
+    server->registerOpenFileCallback(
+            ClientMemoryServerMemoryCommunication_openFileCbk, &context);
+    server->registerCloseFileCallback(
+            ClientMemoryServerMemoryCommunication_closeFileCbk, &context);
+
+    std::thread serverThread([&](){
+        server->startListening();
+    });
+
+    client->setConnection("127.0.0.1", PORT);
+
+    char *sendBuffer = new char[BUFSIZE];
+    memset(sendBuffer, 0, BUFSIZE);
+
+    //Basic TH_Upload_Initialization serialization
+    sendBuffer[0] = 0x00;
+    sendBuffer[1] = 0x00;
+    sendBuffer[2] = 0x00;
+    sendBuffer[3] = 0x09;
+    sendBuffer[4] = 0x41;
+    sendBuffer[5] = 0x34;
+    sendBuffer[6] = 0x00;
+    sendBuffer[7] = 0x01;
+    sendBuffer[8] = 0x00;
+    FILE *sendFd = fmemopen(sendBuffer, BUFSIZE, "r");
+    client->sendFile(FILENAME_MEM_MEM_SERIALIZED, sendFd);
+
+    char *receiveBuffer = new char[BUFSIZE];
+    memset(receiveBuffer, 0, BUFSIZE);
+    FILE *receiveFd = fmemopen(receiveBuffer, BUFSIZE, "w");
+    client->fetchFile(FILENAME_MEM_MEM_SERIALIZED, receiveFd);
+
+    server->stopListening();
+    serverThread.join();
+
+    fclose(sendFd);
+    fclose(receiveFd);
+
+    delete server;
+    delete client;
+
+    for (int i = 0; i < BUFSIZE; i++) {
+        ASSERT_EQ(sendBuffer[i], receiveBuffer[i]);
+    }
+}
 
 void *serverThread(void *arg)
 {
