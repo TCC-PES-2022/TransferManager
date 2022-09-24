@@ -9,6 +9,11 @@ TFTPClient::TFTPClient() {
         clientHandler = nullptr;
         throw "CLIENT HANDLER CREATION FAILED!";
     }
+
+    tftpErrorCtx = nullptr;
+    _tftpErrorCallback = nullptr;
+
+    register_tftp_error_callback(clientHandler, tftpErrorCbk, this);
 }
 
 TFTPClient::~TFTPClient() {
@@ -44,6 +49,15 @@ TftpClientOperationResult TFTPClient::setConnection(
            TftpClientOperationResult::TFTP_CLIENT_ERROR;
 }
 
+TftpClientOperationResult TFTPClient::registerTftpErrorCallback(
+        tftpErrorCallback callback,
+        void *context)
+{
+    _tftpErrorCallback = callback;
+    tftpErrorCtx = context;
+    return TftpClientOperationResult::TFTP_CLIENT_OK;
+}
+
 TftpClientOperationResult TFTPClient::sendFile(
         const char *filename,
         FILE *fp
@@ -66,4 +80,21 @@ TftpClientOperationResult TFTPClient::fetchFile(
     return fetch_file(clientHandler, filename, fp) == TFTP_OK ?
            TftpClientOperationResult::TFTP_CLIENT_OK :
            TftpClientOperationResult::TFTP_CLIENT_ERROR;
+}
+
+TftpOperationResult TFTPClient::tftpErrorCbk (
+        short error_code,
+        const char *error_message,
+        void *context)
+{
+    if (context != NULL) {
+        TFTPClient *client = (TFTPClient *) context;
+        if (client->_tftpErrorCallback != nullptr) {
+            std::string errorMessage(error_message);
+            client->_tftpErrorCallback(error_code, errorMessage,
+                                       client->tftpErrorCtx);
+            return TFTP_OK;
+        }
+    }
+    return TFTP_ERROR;
 }

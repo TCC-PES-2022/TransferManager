@@ -19,6 +19,21 @@
 #define FILENAME_MEM_MEM_SERIALIZED "mem_mem_serializer_test.txt"
 #define MEM_MEM_MSG "MEM MEM TEST"
 #define BUFSIZE 100
+#define ERROR_FILE "error_test.txt"
+#define ERROR_CODE 0
+#define ABORT_TFTP_MSG "ABORT:1003"
+#define WAIT_TFTP_MSG "WAIT:1"
+
+typedef struct
+{
+    SectionId sectionId;
+    std::string clientIp;
+    int matchSection;
+    TftpServerSectionStatus status;
+    char buffer[BUFSIZE];
+    std::string tftpErrorMsg;
+    short tftpErrorCode;
+} ClientServerContext;
 
 /*
  *******************************************************************************
@@ -106,19 +121,13 @@ TEST(TFTPServer, ServerRegisterSectionFinishedCallback)
  *******************************************************************************
  */
 
-typedef struct {
-    SectionId sectionId;
-    std::string clientIp;
-    int matchSection;
-    TftpServerSectionStatus status;
-} ClientDiskServerDiskCommunicationContext;
-
-TftpServerOperationResult ClientDiskServerDiskCommunication_sectionStartedCbk (
-        ITFTPSection *sectionHandler,
-        void *context)
+TftpServerOperationResult ClientDiskServerDiskCommunication_sectionStartedCbk(
+    ITFTPSection *sectionHandler,
+    void *context)
 {
-    if (context != nullptr) {
-        ClientDiskServerDiskCommunicationContext *ctx = (ClientDiskServerDiskCommunicationContext *)context;
+    if (context != nullptr)
+    {
+        ClientServerContext *ctx = (ClientServerContext *)context;
         SectionId id;
         std::string clientIp;
         sectionHandler->getSectionId(&id);
@@ -130,12 +139,13 @@ TftpServerOperationResult ClientDiskServerDiskCommunication_sectionStartedCbk (
     return TftpServerOperationResult::TFTP_SERVER_ERROR;
 }
 
-TftpServerOperationResult ClientDiskServerDiskCommunication_sectionFinishedCbk (
-        ITFTPSection *sectionHandler,
-        void *context)
+TftpServerOperationResult ClientDiskServerDiskCommunication_sectionFinishedCbk(
+    ITFTPSection *sectionHandler,
+    void *context)
 {
-    if (context != nullptr) {
-        ClientDiskServerDiskCommunicationContext *ctx = (ClientDiskServerDiskCommunicationContext *)context;
+    if (context != nullptr)
+    {
+        ClientServerContext *ctx = (ClientServerContext *)context;
         SectionId id;
         std::string clientIp;
         sectionHandler->getSectionId(&id);
@@ -151,7 +161,7 @@ TEST(TFTPClientServer, ClientDiskServerDiskCommunication)
 {
     ITFTPServer *server = new TFTPServer();
     ITFTPClient *client = new TFTPClient();
-    ClientDiskServerDiskCommunicationContext context;
+    ClientServerContext context;
     context.sectionId = 0;
     context.matchSection = 0;
     context.status = TftpServerSectionStatus::TFTP_SERVER_SECTION_UNDEFINED;
@@ -163,11 +173,10 @@ TEST(TFTPClientServer, ClientDiskServerDiskCommunication)
     server->registerSectionFinishedCallback(
         ClientDiskServerDiskCommunication_sectionFinishedCbk, &context);
 
-    std::thread serverThread([&](){
-        server->startListening();
-    });
+    std::thread serverThread([&]()
+                             { server->startListening(); });
 
-    client->setConnection("127.0.0.1", PORT);
+    client->setConnection(LOCALHOST, PORT);
 
     FILE *sendFd = fopen(FILENAME_DISK_DISK_SEND, "w");
     fprintf(sendFd, DISK_DISK_MSG);
@@ -197,7 +206,6 @@ TEST(TFTPClientServer, ClientDiskServerDiskCommunication)
     ASSERT_EQ(context.status, TftpServerSectionStatus::TFTP_SERVER_SECTION_OK);
 }
 
-
 TEST(TFTPClientServer, ClientMemoryServerDiskCommunication)
 {
     ITFTPServer *server = new TFTPServer();
@@ -206,11 +214,10 @@ TEST(TFTPClientServer, ClientMemoryServerDiskCommunication)
     server->setPort(PORT);
     server->setTimeout(TIMEOUT);
 
-    std::thread serverThread([&](){
-        server->startListening();
-    });
+    std::thread serverThread([&]()
+                             { server->startListening(); });
 
-    client->setConnection("127.0.0.1", PORT);
+    client->setConnection(LOCALHOST, PORT);
 
     char *sendBuffer = new char[BUFSIZE];
     strcpy(sendBuffer, MEM_DISK_MSG);
@@ -234,17 +241,13 @@ TEST(TFTPClientServer, ClientMemoryServerDiskCommunication)
     ASSERT_STREQ(sendBuffer, MEM_DISK_MSG);
 }
 
-typedef struct {
-    SectionId sectionId;
-    char buffer[BUFSIZE];
-} ClientMemoryServerMemoryCommunicationContext;
-
-TftpServerOperationResult ClientMemoryServerMemoryCommunicationContext_sectionStartedCbk (
-        ITFTPSection *sectionHandler,
-        void *context)
+TftpServerOperationResult ClientServerContext_sectionStartedCbk(
+    ITFTPSection *sectionHandler,
+    void *context)
 {
-    if (context != nullptr) {
-        ClientMemoryServerMemoryCommunicationContext *ctx = (ClientMemoryServerMemoryCommunicationContext *)context;
+    if (context != nullptr)
+    {
+        ClientServerContext *ctx = (ClientServerContext *)context;
         SectionId id;
         sectionHandler->getSectionId(&id);
         ctx->sectionId = id;
@@ -253,22 +256,25 @@ TftpServerOperationResult ClientMemoryServerMemoryCommunicationContext_sectionSt
     return TftpServerOperationResult::TFTP_SERVER_ERROR;
 }
 
-TftpServerOperationResult ClientMemoryServerMemoryCommunication_openFileCbk (
-        ITFTPSection *sectionHandler,
-        FILE **fd,
-        char *filename,
-        char* mode,
-        size_t *fileSize,
-        void *context)
+TftpServerOperationResult ClientMemoryServerMemoryCommunication_openFileCbk(
+    ITFTPSection *sectionHandler,
+    FILE **fd,
+    char *filename,
+    char *mode,
+    size_t *fileSize,
+    void *context)
 {
-    if (context != nullptr) {
-        ClientMemoryServerMemoryCommunicationContext *ctx =
-                (ClientMemoryServerMemoryCommunicationContext*)context;
+    if (context != nullptr)
+    {
+        ClientServerContext *ctx =
+            (ClientServerContext *)context;
         SectionId id;
         sectionHandler->getSectionId(&id);
-        if (ctx->sectionId == id) {
+        if (ctx->sectionId == id)
+        {
             *fd = fmemopen(ctx->buffer, BUFSIZE, mode);
-            if (fileSize != NULL) {
+            if (fileSize != NULL)
+            {
                 *fileSize = BUFSIZE;
             }
             return TftpServerOperationResult::TFTP_SERVER_OK;
@@ -278,14 +284,14 @@ TftpServerOperationResult ClientMemoryServerMemoryCommunication_openFileCbk (
     return TftpServerOperationResult::TFTP_SERVER_ERROR;
 }
 
-TftpServerOperationResult ClientMemoryServerMemoryCommunication_closeFileCbk (
-        ITFTPSection *sectionHandler,
-        FILE *fd,
-        void *context)
+TftpServerOperationResult ClientMemoryServerMemoryCommunication_closeFileCbk(
+    ITFTPSection *sectionHandler,
+    FILE *fd,
+    void *context)
 {
-    if (fd != NULL) {
-        return fclose(fd) == 0 ? TftpServerOperationResult::TFTP_SERVER_OK :
-                                 TftpServerOperationResult::TFTP_SERVER_ERROR;
+    if (fd != NULL)
+    {
+        return fclose(fd) == 0 ? TftpServerOperationResult::TFTP_SERVER_OK : TftpServerOperationResult::TFTP_SERVER_ERROR;
     }
     return TftpServerOperationResult::TFTP_SERVER_OK;
 }
@@ -294,23 +300,22 @@ TEST(TFTPClientServer, ClientMemoryServerMemoryCommunication)
 {
     ITFTPServer *server = new TFTPServer();
     ITFTPClient *client = new TFTPClient();
-    ClientMemoryServerMemoryCommunicationContext context;
+    ClientServerContext context;
     memset(context.buffer, 0, BUFSIZE);
 
     server->setPort(PORT);
     server->setTimeout(TIMEOUT);
     server->registerSectionStartedCallback(
-        ClientMemoryServerMemoryCommunicationContext_sectionStartedCbk, &context);
+        ClientServerContext_sectionStartedCbk, &context);
     server->registerOpenFileCallback(
         ClientMemoryServerMemoryCommunication_openFileCbk, &context);
     server->registerCloseFileCallback(
         ClientMemoryServerMemoryCommunication_closeFileCbk, &context);
 
-    std::thread serverThread([&](){
-        server->startListening();
-    });
+    std::thread serverThread([&]()
+                             { server->startListening(); });
 
-    client->setConnection("127.0.0.1", PORT);
+    client->setConnection(LOCALHOST, PORT);
 
     char *sendBuffer = new char[BUFSIZE];
     strcpy(sendBuffer, MEM_MEM_MSG);
@@ -345,28 +350,27 @@ TEST(TFTPClientServer, ClientMemoryServerMemoryCommunicationSerialized)
 {
     ITFTPServer *server = new TFTPServer();
     ITFTPClient *client = new TFTPClient();
-    ClientMemoryServerMemoryCommunicationContext context;
+    ClientServerContext context;
     memset(context.buffer, 0, BUFSIZE);
 
     server->setPort(PORT);
     server->setTimeout(TIMEOUT);
     server->registerSectionStartedCallback(
-            ClientMemoryServerMemoryCommunicationContext_sectionStartedCbk, &context);
+        ClientServerContext_sectionStartedCbk, &context);
     server->registerOpenFileCallback(
-            ClientMemoryServerMemoryCommunication_openFileCbk, &context);
+        ClientMemoryServerMemoryCommunication_openFileCbk, &context);
     server->registerCloseFileCallback(
-            ClientMemoryServerMemoryCommunication_closeFileCbk, &context);
+        ClientMemoryServerMemoryCommunication_closeFileCbk, &context);
 
-    std::thread serverThread([&](){
-        server->startListening();
-    });
+    std::thread serverThread([&]()
+                             { server->startListening(); });
 
-    client->setConnection("127.0.0.1", PORT);
+    client->setConnection(LOCALHOST, PORT);
 
     char *sendBuffer = new char[BUFSIZE];
     memset(sendBuffer, 0, BUFSIZE);
 
-    //Basic TH_Upload_Initialization serialization
+    // Basic TH_Upload_Initialization serialization
     sendBuffer[0] = 0x00;
     sendBuffer[1] = 0x00;
     sendBuffer[2] = 0x00;
@@ -393,9 +397,125 @@ TEST(TFTPClientServer, ClientMemoryServerMemoryCommunicationSerialized)
     delete server;
     delete client;
 
-    for (int i = 0; i < BUFSIZE; i++) {
+    for (int i = 0; i < BUFSIZE; i++)
+    {
         ASSERT_EQ(sendBuffer[i], receiveBuffer[i]);
     }
+}
+
+TftpServerOperationResult CustomTftpErrorMessageSend_openFileCbk(
+    ITFTPSection *sectionHandler,
+    FILE **fd,
+    char *filename,
+    char *mode,
+    size_t *fileSize,
+    void *context)
+{
+    (*fd) = NULL;
+    std::string errorMsg(ABORT_TFTP_MSG);
+    sectionHandler->setErrorMessage(errorMsg);
+    return TftpServerOperationResult::TFTP_SERVER_ERROR;
+}
+
+TftpClientOperationResult CustomTftpErrorMessage_tftpErrorCbk (
+        short error_code,
+        std::string &error_message,
+        void *context)
+{
+    if (context != nullptr)
+    {
+        ClientServerContext *ctx =
+            (ClientServerContext *)context;
+        ctx->tftpErrorMsg = error_message;
+        ctx->tftpErrorCode = error_code;
+    }
+    return TftpClientOperationResult::TFTP_CLIENT_OK;
+}
+
+TEST(TFTPClientServer, CustomTftpErrorMessageSend)
+{
+    ITFTPServer *server = new TFTPServer();
+    ITFTPClient *client = new TFTPClient();
+    ClientServerContext context;
+
+    server->setPort(PORT);
+    server->setTimeout(TIMEOUT);
+    server->registerOpenFileCallback(
+        CustomTftpErrorMessageSend_openFileCbk, &context);
+
+    std::thread serverThread([&]()
+                             { server->startListening(); });
+
+    client->setConnection(LOCALHOST, PORT);
+    client->registerTftpErrorCallback(
+        CustomTftpErrorMessage_tftpErrorCbk, &context);
+
+    FILE *sendFd = fopen(ERROR_FILE, "w+");
+    if (sendFd == NULL)
+    {
+        FAIL() << "Error opening file: " << ERROR_FILE;
+    }
+    ASSERT_EQ(client->sendFile(ERROR_FILE, sendFd),
+              TftpClientOperationResult::TFTP_CLIENT_ERROR);
+
+    server->stopListening();
+    serverThread.join();
+
+    delete server;
+    delete client;
+
+    ASSERT_EQ(context.tftpErrorMsg, ABORT_TFTP_MSG);
+    ASSERT_EQ(context.tftpErrorCode, ERROR_CODE);
+}
+
+TftpServerOperationResult CustomTftpErrorMessageFetch_openFileCbk(
+    ITFTPSection *sectionHandler,
+    FILE **fd,
+    char *filename,
+    char *mode,
+    size_t *fileSize,
+    void *context)
+{
+    (*fd) = NULL;
+    std::string errorMsg(WAIT_TFTP_MSG);
+    sectionHandler->setErrorMessage(errorMsg);
+    return TftpServerOperationResult::TFTP_SERVER_ERROR;
+}
+
+TEST(TFTPClientServer, CustomTftpErrorMessageFetch)
+{
+    ITFTPServer *server = new TFTPServer();
+    ITFTPClient *client = new TFTPClient();
+    ClientServerContext context;
+
+    server->setPort(PORT);
+    server->setTimeout(TIMEOUT);
+    server->registerOpenFileCallback(
+        CustomTftpErrorMessageFetch_openFileCbk, &context);
+
+    std::thread serverThread([&]()
+                             { server->startListening(); });
+
+    client->setConnection(LOCALHOST, PORT);
+    client->registerTftpErrorCallback(
+        CustomTftpErrorMessage_tftpErrorCbk, &context);
+
+    FILE *sendFd = fopen(ERROR_FILE, "r+");
+    if (sendFd == NULL)
+    {
+        FAIL() << "Error opening file: " << ERROR_FILE;
+    }
+    ASSERT_EQ(client->fetchFile(ERROR_FILE, sendFd),
+              TftpClientOperationResult::TFTP_CLIENT_ERROR);
+
+    server->stopListening();
+    serverThread.join();
+
+    delete server;
+    delete client;
+
+    ASSERT_EQ(context.tftpErrorMsg, WAIT_TFTP_MSG);
+    ASSERT_EQ(context.tftpErrorCode, ERROR_CODE);
 }
 
 void *serverThread(void *arg)
@@ -413,14 +533,16 @@ TEST(TFTPExtra, StartStopServer)
     sleep(TIMEOUT);
     server->stopListening();
     struct timespec ts;
-    if (clock_gettime(CLOCK_REALTIME, &ts) == -1) {
+    if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
+    {
         FAIL() << "clock_gettime() failed";
     }
     ts.tv_sec += TIMEOUT;
     int s = pthread_timedjoin_np(serverThreadID, NULL, &ts);
     delete server;
 
-    if (s != 0) {
+    if (s != 0)
+    {
         FAIL() << "pthread_timedjoin_np() failed";
     }
     SUCCEED();
@@ -443,7 +565,8 @@ TEST(TFTPExtra, TwoServers)
     server2->stopListening();
 
     struct timespec ts;
-    if (clock_gettime(CLOCK_REALTIME, &ts) == -1) {
+    if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
+    {
         FAIL() << "clock_gettime() failed";
     }
     ts.tv_sec += TIMEOUT;
@@ -453,7 +576,8 @@ TEST(TFTPExtra, TwoServers)
     delete server1;
     delete server2;
 
-    if (s1 != 0 || s2 != 0) {
+    if (s1 != 0 || s2 != 0)
+    {
         FAIL() << "pthread_timedjoin_np() failed";
     }
     SUCCEED();

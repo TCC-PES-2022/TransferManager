@@ -109,6 +109,10 @@ public:
             TftpServerSectionStatus *status
     ) override;
 
+    TftpServerOperationResult setErrorMessage(
+            std::string &error_message
+    ) override;
+
 private:
     TFTPSection(const TftpdSectionHandlerPtr sectionHandler);
     TftpdSectionHandlerPtr sectionHandler;

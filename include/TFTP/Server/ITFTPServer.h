@@ -276,6 +276,18 @@ public:
             TftpServerSectionStatus *status
     ) = 0;
 
+    /**
+     * @brief Set custom error message to be sent in TFTP response.
+     *
+     * @param[in] error_message the error message to send.
+     *
+     * @return TFTP_SERVER_OK if success.
+     * @return TFTP_SERVER_ERROR otherwise.
+     */
+    virtual TftpServerOperationResult setErrorMessage(
+            std::string &error_message
+    ) = 0;
+
 };
 
 #endif //ITFTPSERVER_H

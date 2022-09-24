@@ -20,6 +20,11 @@ public:
             const int port
     ) override;
 
+    TftpClientOperationResult registerTftpErrorCallback(
+            tftpErrorCallback callback,
+            void *context
+    ) override;
+
     TftpClientOperationResult sendFile(
             const char *filename,
             FILE *fp
@@ -32,6 +37,15 @@ public:
 
 private:
     TftpHandlerPtr clientHandler;
+
+    static TftpOperationResult tftpErrorCbk (
+            short error_code,
+            const char *error_message,
+            void *context
+    );
+
+    void *tftpErrorCtx;
+    tftpErrorCallback _tftpErrorCallback;
 };
 
 #endif //TFTPCLIENT_H

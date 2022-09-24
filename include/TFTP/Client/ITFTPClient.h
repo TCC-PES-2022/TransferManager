@@ -6,6 +6,7 @@
 #define ITFTPCLIENT_H
 
 #include "tftp_api.h"
+#include <string>
 
 /**
  * @brief Enum with possible return from interface functions.
@@ -17,6 +18,23 @@ enum class TftpClientOperationResult {
     TFTP_CLIENT_OK = 0,
     TFTP_CLIENT_ERROR
 };
+
+/**
+ * @brief TFTP error callback. This callback is called when the client
+ * receives an error from the server.
+ *
+ * @param[in]   error_code      Error code.
+ * @param[in]   error_msg       Error message.
+ * @param[in]   context         Context passed to the callback.
+ *
+ * @return TFTP_CLIENT_OK if success.
+ * @return TFTP_CLIENT_ERROR otherwise.
+ */
+typedef TftpClientOperationResult (*tftpErrorCallback) (
+        short error_code,
+        std::string &error_message,
+        void *context
+);
 
 /**
  * @brief TFTP client interface.
@@ -36,6 +54,20 @@ public:
     virtual TftpClientOperationResult setConnection(
             const char *host,
             const int port
+    ) = 0;
+
+    /**
+     * @brief Register TFTP error callback
+     *
+     * @param[in] callback the callback to register.
+     * @param[in] context the user context.
+     *
+     * @return TFTP_CLIENT_OK if success.
+     * @return TFTP_CLIENT_ERROR otherwise.
+     */
+    virtual TftpClientOperationResult registerTftpErrorCallback(
+            tftpErrorCallback callback,
+            void *context
     ) = 0;
 
     /**

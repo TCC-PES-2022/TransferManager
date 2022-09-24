@@ -258,3 +258,16 @@ TftpServerOperationResult TFTPSection::getSectionStatus(
 
     return TftpServerOperationResult::TFTP_SERVER_OK;
 }
+
+TftpServerOperationResult TFTPSection::setErrorMessage(std::string &message)
+{
+    if (sectionHandler == nullptr) {
+        return TftpServerOperationResult::TFTP_SERVER_ERROR;
+    }
+
+    if (set_error_msg(sectionHandler, message.c_str()) != TFTPD_OK) {
+        return TftpServerOperationResult::TFTP_SERVER_ERROR;
+    }
+
+    return TftpServerOperationResult::TFTP_SERVER_OK;
+}
