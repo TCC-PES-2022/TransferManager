@@ -30,7 +30,7 @@ default: all
 $(DEPS): $@
 	cd modules/$@ && make -j$(shell echo $$((`nproc`))) && make install
 
-$(TARGET): $(OBJ)
+$(TARGET): $(DEPS) $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) $(LINKFLAGS) $(INCDIRS) $(LDFLAGS) $(LDLIBS)
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
@@ -43,7 +43,7 @@ makedir:
 	@mkdir -p $(OBJDIRS) $(BIN_PATH)
 
 .PHONY: all
-all: makedir $(DEPS) $(TARGET)
+all: makedir $(TARGET)
 
 .PHONY: target
 target: makedir $(TARGET)
