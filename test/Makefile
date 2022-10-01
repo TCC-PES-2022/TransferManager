@@ -55,7 +55,7 @@ gtest:
 	cd $(GTEST_ROOT) && cmake . && make -j$(shell echo $$((`nproc`)))
 
 .PHONY: all
-all: makedir $(DEPS) $(TARGET)
+all: makedir $(TARGET)
 
 .PHONY: runtests
 runtests:

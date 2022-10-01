@@ -30,7 +30,7 @@ default: all
 $(DEPS): $@
 	cd modules/$@ && make dependencies && make -j$(shell echo $$((`nproc`))) && make install
 
-$(TARGET): $(OBJ)
+$(TARGET): $(DEPS) $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) $(LINKFLAGS) $(INCDIRS) $(LDFLAGS) $(LDLIBS)
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*

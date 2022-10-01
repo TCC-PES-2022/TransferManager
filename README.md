@@ -8,4 +8,4 @@ To clone this repository, run:
 
     git clone https://github.com/TCC-PES-2022/TransferManager.git
     cd TransferManager
-    git submodule update --init --remote
+    git submodule update --init --recursive
