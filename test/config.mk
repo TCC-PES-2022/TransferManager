@@ -9,7 +9,6 @@ CXXFLAGS 		+= -Wall
 CXXFLAGS 		+= -Wextra
 CXXFLAGS		+= -pthread
 CXXFLAGS 		+= -fprofile-arcs -ftest-coverage --coverage
-#CXXFLAGS 		+= -g -ggdb
 COBJFLAGS 		:= $(CXXFLAGS) -c
 LDFLAGS  		:= -L$(GTEST_ROOT)/lib -L$(DEP_PATH)/lib
 LDLIBS   		:= -ltransfer -ltftp -ltftpd -lgtest -fprofile-arcs -lgcov -lpthread

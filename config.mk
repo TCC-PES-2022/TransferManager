@@ -18,6 +18,5 @@ LINKFLAGS 	:= -shared
 
 COBJFLAGS 	:= $(CXXFLAGS) -c -fPIC
 test: COBJFLAGS 	+= $(TESTFLAGS)
-debug: COBJFLAGS 	+= $(DBGFLAGS)
-
 test: LINKFLAGS 	+= -fprofile-arcs -lgcov
+debug: COBJFLAGS 	+= $(DBGFLAGS)
