@@ -28,7 +28,7 @@ default: all
 
 # non-phony targets
 $(DEPS): $@
-	cd modules/$@ && make -j$(shell echo $$((`nproc`))) && make install
+	cd modules/$@ && make dependencies && make -j$(shell echo $$((`nproc`))) && make install
 
 $(TARGET): $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) $(LINKFLAGS) $(INCDIRS) $(LDFLAGS) $(LDLIBS)
@@ -42,8 +42,11 @@ $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 makedir:
 	@mkdir -p $(OBJDIRS) $(BIN_PATH)
 
+.PHONY: dependencies
+dependencies: $(DEPS)
+
 .PHONY: all
-all: makedir $(DEPS) $(TARGET)
+all: makedir $(TARGET)
 
 .PHONY: target
 target: makedir $(TARGET)

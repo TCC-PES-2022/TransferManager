@@ -7,7 +7,7 @@ OBJ_PATH := obj
 INCLUDE_PATH := include
 REPORT_PATH := report
 
-DEPS := transfermanager gtest
+DEPS := transfermanager
 
 # compile macros
 TARGET_NAME := unity_test_tftp
@@ -35,15 +35,12 @@ CLEAN_LIST := $(TARGET) 		 \
 default: all
 
 # non-phony targets
-$(TARGET): $(OBJ)
+$(TARGET): $(DEPS) $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) \
 	$(LINKFLAGS) $(INCFLAGS) $(LDFLAGS) $(LDLIBS)
 
 transfermanager:
-	cd .. && make test && make install
-
-gtest:
-	cd $(GTEST_ROOT) && cmake . && make -j$(shell echo $$((`nproc`)))
+	cd .. && make test -j16 && make install
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	$(CXX) $(COBJFLAGS) -o $@ $< $(INCFLAGS)
@@ -53,11 +50,12 @@ $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 makedir:
 	@mkdir -p $(BIN_PATH) $(OBJ_PATH)
 
+.PHONY: gtest
+gtest:
+	cd $(GTEST_ROOT) && cmake . && make -j$(shell echo $$((`nproc`)))
+
 .PHONY: all
 all: makedir $(DEPS) $(TARGET)
-
-.PHONY: target
-target: transfermanager $(TARGET)
 
 .PHONY: runtests
 runtests:

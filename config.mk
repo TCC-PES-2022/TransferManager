@@ -11,7 +11,7 @@ DEP_PATH 		:= $(DEST)
 CXX 		?=
 CXXFLAGS 	:= -Wall -Werror -std=c++11
 DBGFLAGS 	:= -g -ggdb
-TESTFLAGS 	:= -fprofile-arcs -ftest-coverage --coverage -lgcov
+TESTFLAGS 	:= -fprofile-arcs -ftest-coverage --coverage
 LINKFLAGS 	:= -shared
 #LDFLAGS  	:= $(addprefix -L, $(basename $(DEP_PATH)))
 #LDLIBS   	:= -ltftp -ltftpd
@@ -19,3 +19,5 @@ LINKFLAGS 	:= -shared
 COBJFLAGS 	:= $(CXXFLAGS) -c -fPIC
 test: COBJFLAGS 	+= $(TESTFLAGS)
 debug: COBJFLAGS 	+= $(DBGFLAGS)
+
+test: LINKFLAGS 	+= -fprofile-arcs -lgcov
