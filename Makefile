@@ -34,15 +34,17 @@ $(DEPS): $@
 LIB_DEPS_COMPLETE := $(addprefix $(DEP_PATH)/lib/,$(LIB_DEPS))
 $(TARGET): $(OBJ)
 	@echo "Linking $@"
-	$(AR) $(ARFLAGS) libtmp.a $(OBJ)
-	echo "create $@" > lib.mri
-	echo "addlib libtmp.a" >> lib.mri
-	echo "$(addprefix \naddlib ,$(LIB_DEPS_COMPLETE))" >> lib.mri
-	echo "save" >> lib.mri
-	echo "end" >> lib.mri
-	$(AR) -M < lib.mri
-	rm libtmp.a
-	rm lib.mri
+	$(AR) $(ARFLAGS) $@ $(OBJ)
+	# $(AR) $(ARFLAGS) libtmp.a $(OBJ)
+	# echo "create $@" > lib.mri
+	# echo "addlib libtmp.a" >> lib.mri
+	# echo "$(addprefix \naddlib ,$(LIB_DEPS_COMPLETE))" >> lib.mri
+	# echo "save" >> lib.mri
+	# echo "end" >> lib.mri
+	# $(AR) -M < lib.mri
+	# # rm libtmp.a
+	# rm lib.mri
+	# ranlib $@
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	@echo "Building $<"
@@ -58,6 +60,8 @@ deps: $(DEPS)
 
 .PHONY: all
 all: makedir $(TARGET)
+	strip --strip-unneeded $(TARGET)
+	ranlib $(TARGET)
 
 .PHONY: test
 test: makedir $(TARGET)
