@@ -2,21 +2,20 @@
 VERSION = 0.1
 
 # paths
-DEST 	:= /opt/fls
-DEPS 	:= atftp
+DESTDIR 	?= /tmp
+DEP_PATH 	?= $(DESTDIR)
 
-INSTALL_PATH 	:= $(DEST)
-DEP_PATH 		:= $(DEST)
+DEPS 		:= atftp
+LIB_DEPS	:= libtftp.a libtftpd.a
 
+AR 			?= ar
+ARFLAGS		:= rcs
 CXX 		?=
 CXXFLAGS 	:= -Wall -Werror -std=c++11
 DBGFLAGS 	:= -g -ggdb
 TESTFLAGS 	:= -fprofile-arcs -ftest-coverage --coverage
-LINKFLAGS 	:= -shared
-#LDFLAGS  	:= $(addprefix -L, $(basename $(DEP_PATH)))
-#LDLIBS   	:= -ltftp -ltftpd
 
-COBJFLAGS 	:= $(CXXFLAGS) -c -fPIC
+COBJFLAGS 	:= $(CXXFLAGS) -c
 test: COBJFLAGS 	+= $(TESTFLAGS)
 test: LINKFLAGS 	+= -fprofile-arcs -lgcov
 debug: COBJFLAGS 	+= $(DBGFLAGS)
