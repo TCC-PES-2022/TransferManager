@@ -12,7 +12,7 @@ CXXFLAGS 		+= -fprofile-arcs -ftest-coverage --coverage
 COBJFLAGS 		:= $(CXXFLAGS) -c
 LDFLAGS  		:= -L$(GTEST_ROOT)/lib -L$(DEP_PATH)/lib
 LDLIBS   		:= -ltransfer -ltftp -ltftpd -lgtest -fprofile-arcs -lgcov -lpthread
-INCFLAGS 		:= -I$(GTEST_ROOT)/googletest/include -I$(DEP_PATH)/include
+INCFLAGS 		:= -I$(DEP_PATH)/include
 
 debug: COBJFLAGS 		+= $(DBGFLAGS)
 debugdeps: DEP_RULE    	:= debug

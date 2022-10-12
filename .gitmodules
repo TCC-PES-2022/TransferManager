@@ -2,7 +2,3 @@
 	path = modules/atftp
 	url = https://github.com/TCC-PES-2022/atftp.git
 	branch = libatftp
-[submodule "test/googletest"]
-	path = test/googletest
-	url = https://github.com/google/googletest.git
-	branch = v1.12.x
