@@ -9,11 +9,12 @@ DEPS 		:= atftp
 # LIB_DEPS	:= libatftp.a
 
 AR 			?= ar
-ARFLAGS		:= -rcv
+ARFLAGS		:= -rcvs
 CXX 		?=
 CXXFLAGS 	:= -Wall -Werror -std=c++11
 DBGFLAGS 	:= -g -ggdb
 TESTFLAGS 	:= -fprofile-arcs -ftest-coverage --coverage
+LINKFLAGS 	:= -shared
 
 COBJFLAGS 	:= $(CXXFLAGS) -c -fPIC
 test: COBJFLAGS 	+= $(TESTFLAGS)
