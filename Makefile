@@ -6,7 +6,8 @@ OBJ_PATH := obj
 SRC_PATH := src
 INCLUDE_PATH := include
 
-TARGET_NAME := libtransfer.a libtransfer.so
+# TARGET_NAME := libtransfer.a libtransfer.so
+TARGET_NAME := libtransfer.a
 TARGET := $(addprefix $(OUT_PATH)/, $(TARGET_NAME))
 
 INCDIRS := $(addprefix -I,$(shell find $(INCLUDE_PATH) -type d -print))
