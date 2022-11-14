@@ -25,6 +25,11 @@ public:
             void *context
     ) override;
 
+    TftpClientOperationResult registerTftpFetchDataReceivedCallback(
+            tftpfetchDataReceivedCallback callback,
+            void *context
+    ) override;
+
     TftpClientOperationResult sendFile(
             const char *filename,
             FILE *fp
@@ -44,8 +49,15 @@ private:
             void *context
     );
 
+    static TftpOperationResult tftpFetchDataReceivedCbk (
+            int data_size,
+            void *context
+    );
+
     void *tftpErrorCtx;
     tftpErrorCallback _tftpErrorCallback;
+    void *tftpFetchDataReceivedCtx;
+    tftpfetchDataReceivedCallback _tftpFetchDataReceivedCallback;
 };
 
 #endif //TFTPCLIENT_H

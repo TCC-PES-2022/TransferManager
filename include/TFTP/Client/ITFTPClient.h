@@ -37,6 +37,21 @@ typedef TftpClientOperationResult (*tftpErrorCallback) (
 );
 
 /**
+ * @brief TFTP data received callback. This callback is called when the client
+ * receives data from the server related to the current fetch operation.
+ *
+ * @param[in]   dataSize        Size of the data received.
+ * @param[in]   context         Context passed to the callback.
+ *
+ * @return TFTP_CLIENT_OK if success.
+ * @return TFTP_CLIENT_ERROR otherwise.
+ */
+typedef TftpClientOperationResult (*tftpfetchDataReceivedCallback) (
+        int dataSize,
+        void *context
+);
+
+/**
  * @brief TFTP client interface.
  */
 class ITFTPClient {
@@ -67,6 +82,20 @@ public:
      */
     virtual TftpClientOperationResult registerTftpErrorCallback(
             tftpErrorCallback callback,
+            void *context
+    ) = 0;
+
+    /**
+     * @brief Register TFTP fetch data received callback
+     *
+     * @param[in] callback the callback to register.
+     * @param[in] context the user context.
+     *
+     * @return TFTP_CLIENT_OK if success.
+     * @return TFTP_CLIENT_ERROR otherwise.
+     */
+    virtual TftpClientOperationResult registerTftpFetchDataReceivedCallback(
+            tftpfetchDataReceivedCallback callback,
             void *context
     ) = 0;
 

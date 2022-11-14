@@ -12,8 +12,11 @@ TFTPClient::TFTPClient() {
 
     tftpErrorCtx = nullptr;
     _tftpErrorCallback = nullptr;
+    tftpFetchDataReceivedCtx = nullptr;
+    _tftpFetchDataReceivedCallback = nullptr;
 
     register_tftp_error_callback(clientHandler, tftpErrorCbk, this);
+    register_tftp_fetch_data_received_callback(clientHandler, tftpFetchDataReceivedCbk, this);
 }
 
 TFTPClient::~TFTPClient() {
@@ -58,6 +61,15 @@ TftpClientOperationResult TFTPClient::registerTftpErrorCallback(
     return TftpClientOperationResult::TFTP_CLIENT_OK;
 }
 
+TftpClientOperationResult TFTPClient::registerTftpFetchDataReceivedCallback(
+        tftpfetchDataReceivedCallback callback,
+        void *context)
+{
+    _tftpFetchDataReceivedCallback = callback;
+    tftpFetchDataReceivedCtx = context;
+    return TftpClientOperationResult::TFTP_CLIENT_OK;
+}
+
 TftpClientOperationResult TFTPClient::sendFile(
         const char *filename,
         FILE *fp
@@ -93,6 +105,21 @@ TftpOperationResult TFTPClient::tftpErrorCbk (
             std::string errorMessage(error_message);
             client->_tftpErrorCallback(error_code, errorMessage,
                                        client->tftpErrorCtx);
+            return TFTP_OK;
+        }
+    }
+    return TFTP_ERROR;
+}
+
+TftpOperationResult TFTPClient::tftpFetchDataReceivedCbk (
+        int data_size,
+        void *context)
+{
+    if (context != NULL) {
+        TFTPClient *client = (TFTPClient *) context;
+        if (client->_tftpFetchDataReceivedCallback != nullptr) {
+            client->_tftpFetchDataReceivedCallback(data_size, 
+                                                   client->tftpFetchDataReceivedCtx);
             return TFTP_OK;
         }
     }
