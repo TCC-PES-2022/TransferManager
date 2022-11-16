@@ -10,54 +10,63 @@
 /**
  * @brief TFTP client implementation.
  */
-class TFTPClient : public ITFTPClient {
+class TFTPClient : public ITFTPClient
+{
 public:
-    TFTPClient();
-    virtual ~TFTPClient();
+        TFTPClient();
+        virtual ~TFTPClient();
 
-    TftpClientOperationResult setConnection(
+        TftpClientOperationResult setConnection(
             const char *host,
-            const int port
-    ) override;
+            const int port) override;
 
-    TftpClientOperationResult registerTftpErrorCallback(
+        TftpClientOperationResult setTftpOption(
+            TftpClientOption option,
+            std::string value) override;
+
+        TftpClientOperationResult registerTftpErrorCallback(
             tftpErrorCallback callback,
-            void *context
-    ) override;
+            void *context) override;
 
-    TftpClientOperationResult registerTftpFetchDataReceivedCallback(
+        TftpClientOperationResult registerTftpFetchDataReceivedCallback(
             tftpfetchDataReceivedCallback callback,
-            void *context
-    ) override;
+            void *context) override;
 
-    TftpClientOperationResult sendFile(
-            const char *filename,
-            FILE *fp
-    ) override;
+        TftpClientOperationResult registerTftpOptionAcceptedCallback(
+            tftpOptionAcceptedCallback callback,
+            void *context) override;
 
-    TftpClientOperationResult fetchFile(
+        TftpClientOperationResult sendFile(
             const char *filename,
-            FILE *fp
-    ) override;
+            FILE *fp) override;
+
+        TftpClientOperationResult fetchFile(
+            const char *filename,
+            FILE *fp) override;
 
 private:
-    TftpHandlerPtr clientHandler;
+        TftpHandlerPtr clientHandler;
 
-    static TftpOperationResult tftpErrorCbk (
+        static TftpOperationResult tftpErrorCbk(
             short error_code,
             const char *error_message,
-            void *context
-    );
+            void *context);
 
-    static TftpOperationResult tftpFetchDataReceivedCbk (
+        static TftpOperationResult tftpFetchDataReceivedCbk(
             int data_size,
-            void *context
-    );
+            void *context);
 
-    void *tftpErrorCtx;
-    tftpErrorCallback _tftpErrorCallback;
-    void *tftpFetchDataReceivedCtx;
-    tftpfetchDataReceivedCallback _tftpFetchDataReceivedCallback;
+        static TftpOperationResult tftpOptionAcceptedCbk(
+                char *option,
+                char *value,
+                void *context);
+
+        void *tftpErrorCtx;
+        tftpErrorCallback _tftpErrorCallback;
+        void *tftpFetchDataReceivedCtx;
+        tftpfetchDataReceivedCallback _tftpFetchDataReceivedCallback;
+        void *tftpOptionAcceptedCtx;
+        tftpOptionAcceptedCallback _tftpOptionAcceptedCallback;
 };
 
-#endif //TFTPCLIENT_H
+#endif // TFTPCLIENT_H

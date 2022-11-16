@@ -55,6 +55,38 @@ TEST(TFTPClient, ClientSetConnection)
     delete client;
 }
 
+TEST(TFTPClient, ClientSetTftpOption)
+{
+    ITFTPClient *client = new TFTPClient();
+    TftpClientOperationResult result = client->setTftpOption(TftpClientOption::TFTP_CLIENT_BLOCKSIZE_OPTION, "512");
+    ASSERT_EQ(TftpClientOperationResult::TFTP_CLIENT_OK, result);
+    delete client;
+}
+
+TEST(TFTPClient, ClientRegisterErrorCallback)
+{
+    ITFTPClient *client = new TFTPClient();
+    TftpClientOperationResult result = client->registerTftpErrorCallback(nullptr, nullptr);
+    ASSERT_EQ(TftpClientOperationResult::TFTP_CLIENT_OK, result);
+    delete client;
+}
+
+TEST(TFTPClient, ClientRegisterTftpFetchDataReceivedCallback)
+{
+    ITFTPClient *client = new TFTPClient();
+    TftpClientOperationResult result = client->registerTftpFetchDataReceivedCallback(nullptr, nullptr);
+    ASSERT_EQ(TftpClientOperationResult::TFTP_CLIENT_OK, result);
+    delete client;
+}
+
+TEST(TFTPClient, ClientRegisterTftpOptionAcceptedCallback)
+{
+    ITFTPClient *client = new TFTPClient();
+    TftpClientOperationResult result = client->registerTftpOptionAcceptedCallback(nullptr, nullptr);
+    ASSERT_EQ(TftpClientOperationResult::TFTP_CLIENT_OK, result);
+    delete client;
+}
+
 /*
  *******************************************************************************
  *                             INITIAL SERVER TEST                             *
@@ -111,6 +143,14 @@ TEST(TFTPServer, ServerRegisterSectionFinishedCallback)
 {
     ITFTPServer *server = new TFTPServer();
     TftpServerOperationResult result = server->registerSectionFinishedCallback(nullptr, nullptr);
+    ASSERT_EQ(TftpServerOperationResult::TFTP_SERVER_OK, result);
+    delete server;
+}
+
+TEST(TFTPServer, ServerRegisterOptionReceivedCallback)
+{
+    ITFTPServer *server = new TFTPServer();
+    TftpServerOperationResult result = server->registerOptionReceivedCallback(nullptr, nullptr);
     ASSERT_EQ(TftpServerOperationResult::TFTP_SERVER_OK, result);
     delete server;
 }

@@ -13,10 +13,16 @@
  * Possible return values are:
  * - TFTP_SERVER_OK:                    Operation was successful.
  * - TFTP_SERVER_ERROR:                 Generic error.
+ * - TFTP_OPTION_DEFAULT:               Used in openFileCallback to let the 
+ *                                      server decide whether to accept or deny 
+ *                                      the option.
+ *
  */
-enum class TftpServerOperationResult {
-    TFTP_SERVER_OK = 0,
-    TFTP_SERVER_ERROR
+enum class TftpServerOperationResult
+{
+        TFTP_SERVER_OK = 0,
+        TFTP_SERVER_ERROR,
+        TFTP_OPTION_DEFALT
 };
 
 /**
@@ -26,10 +32,11 @@ enum class TftpServerOperationResult {
  * - TFTP_SERVER_SECTION_ERROR:         Section has failed.
  * - TFTP_SERVER_SECTION_UNDEFINED:     Section status is undefined.
  */
-enum class TftpServerSectionStatus {
-    TFTP_SERVER_SECTION_OK = 0,
-    TFTP_SERVER_SECTION_ERROR,
-    TFTP_SERVER_SECTION_UNDEFINED
+enum class TftpServerSectionStatus
+{
+        TFTP_SERVER_SECTION_OK = 0,
+        TFTP_SERVER_SECTION_ERROR,
+        TFTP_SERVER_SECTION_UNDEFINED
 };
 
 typedef SectionId TftpSectionId;
@@ -45,13 +52,12 @@ class ITFTPSection;
  * @return TFTP_SERVER_OK if success.
  * @return TFTP_SERVER_ERROR otherwise.
  */
-typedef TftpServerOperationResult (*sectionStartedCallback) (
-        ITFTPSection *sectionHandler,
-        void *context
-);
+typedef TftpServerOperationResult (*sectionStartedCallback)(
+    ITFTPSection *sectionHandler,
+    void *context);
 
 /**
-* @brief Callback for end section. This callback is called when a
+ * @brief Callback for end section. This callback is called when a
  * client operation is finished.
  *
  * @param[in] sectionHandler the section handler.
@@ -60,10 +66,9 @@ typedef TftpServerOperationResult (*sectionStartedCallback) (
  * @return TFTP_SERVER_OK if success.
  * @return TFTP_SERVER_ERROR otherwise.
  */
-typedef TftpServerOperationResult (*sectionFinishedCallback) (
-        ITFTPSection *sectionHandler,
-        void *context
-);
+typedef TftpServerOperationResult (*sectionFinishedCallback)(
+    ITFTPSection *sectionHandler,
+    void *context);
 
 /**
  * @brief Open file callback. This callback is called when
@@ -89,14 +94,13 @@ typedef TftpServerOperationResult (*sectionFinishedCallback) (
  * @return TFTP_SERVER_OK if success.
  * @return TFTP_SERVER_ERROR otherwise.
  */
-typedef TftpServerOperationResult (*openFileCallback) (
-        ITFTPSection *sectionHandler,
-        FILE **fd,
-        char *filename,
-        char* mode,
-        size_t *bufferSize,
-        void *context
-);
+typedef TftpServerOperationResult (*openFileCallback)(
+    ITFTPSection *sectionHandler,
+    FILE **fd,
+    char *filename,
+    char *mode,
+    size_t *bufferSize,
+    void *context);
 
 /**
  * @brief Close file callback. This callback is called when
@@ -110,184 +114,208 @@ typedef TftpServerOperationResult (*openFileCallback) (
  * @return TFTP_SERVER_OK if success.
  * @return TFTP_SERVER_ERROR otherwise.
  */
-typedef TftpServerOperationResult (*closeFileCallback) (
+typedef TftpServerOperationResult (*closeFileCallback)(
+    ITFTPSection *sectionHandler,
+    FILE *fd,
+    void *context);
+
+/**
+ * @brief Option received callback. This callback is called when
+ * the server receives an option from the client. Returning TFTPD_OK
+ * will accept the option, returning TFTPD_ERROR will reject it.
+ *
+ * @param[in] sectionHandler the section handler.
+ * @param[in] option the option received.
+ * @param[in] value the value of the option. You can change this value if the 
+ *                 option supports it. If the option doesn't support changes
+ *                in the value, any change will be ignored.
+ * @param[in] context the user context.
+ *
+ * @return TFTPD_OK if success.
+ * @return TFTPD_ERROR otherwise.
+ */
+typedef TftpServerOperationResult (*optionReceivedCallback) (
         ITFTPSection *sectionHandler,
-        FILE *fd,
+        char *option,
+        char *value,
         void *context
 );
-
 
 /**
  * @brief TFTP server interface.
  */
-class ITFTPServer {
+class ITFTPServer
+{
 public:
-    virtual ~ITFTPServer() = default;
+        virtual ~ITFTPServer() = default;
 
-    /**
-     * @brief Set port to use for TFTP Server communication.
-     *
-     * @param[in] port the port to use for TFTP Server communication.
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult setPort(
-            const int port
-    ) = 0;
+        /**
+         * @brief Set port to use for TFTP Server communication.
+         *
+         * @param[in] port the port to use for TFTP Server communication.
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult setPort(
+            const int port) = 0;
 
-    /**
-     * @brief Set timeout. This is the time the server will wait for a client
-     * to send a request. If the client doesn't send a request within this time,
-     * the server will close the connection. The default is 300 seconds.
-     * If you want to disable the timeout, set the timeout to 0.
-     *
-     * @param[in] timeout the timeout in seconds.
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult setTimeout(
-            const int timeout
-    ) = 0;
+        /**
+         * @brief Set timeout. This is the time the server will wait for a client
+         * to send a request. If the client doesn't send a request within this time,
+         * the server will close the connection. The default is 300 seconds.
+         * If you want to disable the timeout, set the timeout to 0.
+         *
+         * @param[in] timeout the timeout in seconds.
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult setTimeout(
+            const int timeout) = 0;
 
-    /**
-     * @brief Register open file callback.
-     *
-     * @param[in] handler the pointer to the tftpd handler.
-     * @param[in] callback the callback to register.
-     * @param[in] context the user context.
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult registerOpenFileCallback(
+        /**
+         * @brief Register open file callback.
+         *
+         * @param[in] handler the pointer to the tftpd handler.
+         * @param[in] callback the callback to register.
+         * @param[in] context the user context.
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult registerOpenFileCallback(
             openFileCallback callback,
-            void *context
-    ) = 0;
+            void *context) = 0;
 
-    /**
-     * @brief Register close file callback.
-     *
-     * @param[in] callback the callback to register.
-     * @param[in] context the user context.
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult registerCloseFileCallback(
+        /**
+         * @brief Register close file callback.
+         *
+         * @param[in] callback the callback to register.
+         * @param[in] context the user context.
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult registerCloseFileCallback(
             closeFileCallback callback,
-            void *context
-    ) = 0;
+            void *context) = 0;
 
-    /**
-     * @brief Register section start callback.
-     *
-     * @param[in] callback the callback to register.
-     * @param[in] context the user context.
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult registerSectionStartedCallback(
+        /**
+         * @brief Register section start callback.
+         *
+         * @param[in] callback the callback to register.
+         * @param[in] context the user context.
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult registerSectionStartedCallback(
             sectionStartedCallback callback,
-            void *context
-    ) = 0;
+            void *context) = 0;
 
-    /**
-     * @brief Register section finished callback.
-     *
-     * @param[in] callback the callback to register.
-     * @param[in] context the user context.
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult registerSectionFinishedCallback(
+        /**
+         * @brief Register section finished callback.
+         *
+         * @param[in] callback the callback to register.
+         * @param[in] context the user context.
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult registerSectionFinishedCallback(
             sectionFinishedCallback callback,
-            void *context
-    ) = 0;
+            void *context) = 0;
 
-    /**
-     * @brief Start the TFTP Server. This is a blocking function.
-     * In order to stop be able to stop the server, call this function
-     * from another thread and then use the stop_listening() function.
-     *
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult startListening() = 0;
+        /**
+         * @brief Register option received callback.
+         *
+         * @param[in] handler the pointer to the tftpd handler.
+         * @param[in] callback the callback to register.
+         * @param[in] context the user context.
+         *
+         * @return TFTPD_OK if success.
+         * @return TFTPD_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult registerOptionReceivedCallback(
+            optionReceivedCallback callback,
+            void *context) = 0;
 
-    /**
-     * @brief Request the TFTP Server to stop listening. The success
-     * return of this function doesn't mean the server has stopped,
-     * it just means that the server will stop listening when it is
-     * ready. When the server stops listening, the startListening()
-     * function will return.
-     *
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult stopListening() = 0;
+        /**
+         * @brief Start the TFTP Server. This is a blocking function.
+         * In order to stop be able to stop the server, call this function
+         * from another thread and then use the stop_listening() function.
+         *
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult startListening() = 0;
 
+        /**
+         * @brief Request the TFTP Server to stop listening. The success
+         * return of this function doesn't mean the server has stopped,
+         * it just means that the server will stop listening when it is
+         * ready. When the server stops listening, the startListening()
+         * function will return.
+         *
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult stopListening() = 0;
 };
 
 /**
  * @brief TFTP section interface.
  */
-class ITFTPSection {
+class ITFTPSection
+{
 public:
-    /**
-     * @brief Get identifier for the section.
-     *
-     * @param[out] section_id the port to use for TFTP Server communication.
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult getSectionId(
-            TftpSectionId *id
-    ) = 0;
+        /**
+         * @brief Get identifier for the section.
+         *
+         * @param[out] section_id the port to use for TFTP Server communication.
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult getSectionId(
+            TftpSectionId *id) = 0;
 
-    /**
-     * @brief Get client IP
-     *
-     * @param[out] ip the client IP.
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult getClientIp(
-            std::string &ip
-    ) = 0;
+        /**
+         * @brief Get client IP
+         *
+         * @param[out] ip the client IP.
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult getClientIp(
+            std::string &ip) = 0;
 
-    /**
-     * @brief Get section status. Call this function from the section_finished
-     * callback to check if the section was successful.
-     *
-     * @param[out] status the status of the section.
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult getSectionStatus(
-            TftpServerSectionStatus *status
-    ) = 0;
+        /**
+         * @brief Get section status. Call this function from the section_finished
+         * callback to check if the section was successful.
+         *
+         * @param[out] status the status of the section.
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult getSectionStatus(
+            TftpServerSectionStatus *status) = 0;
 
-    /**
-     * @brief Set custom error message to be sent in TFTP response.
-     *
-     * @param[in] error_message the error message to send.
-     *
-     * @return TFTP_SERVER_OK if success.
-     * @return TFTP_SERVER_ERROR otherwise.
-     */
-    virtual TftpServerOperationResult setErrorMessage(
-            std::string &error_message
-    ) = 0;
-
+        /**
+         * @brief Set custom error message to be sent in TFTP response.
+         *
+         * @param[in] error_message the error message to send.
+         *
+         * @return TFTP_SERVER_OK if success.
+         * @return TFTP_SERVER_ERROR otherwise.
+         */
+        virtual TftpServerOperationResult setErrorMessage(
+            std::string &error_message) = 0;
 };
 
-#endif //ITFTPSERVER_H
+#endif // ITFTPSERVER_H

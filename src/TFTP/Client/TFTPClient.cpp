@@ -4,8 +4,10 @@
 
 #include "TFTPClient.h"
 
-TFTPClient::TFTPClient() {
-    if (create_tftp_handler(&clientHandler) != TFTP_OK) {
+TFTPClient::TFTPClient()
+{
+    if (create_tftp_handler(&clientHandler) != TFTP_OK)
+    {
         clientHandler = nullptr;
         throw "CLIENT HANDLER CREATION FAILED!";
     }
@@ -14,47 +16,80 @@ TFTPClient::TFTPClient() {
     _tftpErrorCallback = nullptr;
     tftpFetchDataReceivedCtx = nullptr;
     _tftpFetchDataReceivedCallback = nullptr;
+    tftpOptionAcceptedCtx = nullptr;
+    _tftpOptionAcceptedCallback = nullptr;
 
     register_tftp_error_callback(clientHandler, tftpErrorCbk, this);
     register_tftp_fetch_data_received_callback(clientHandler, tftpFetchDataReceivedCbk, this);
+    register_tftp_option_accepted_callback(clientHandler, tftpOptionAcceptedCbk, this);
 }
 
-TFTPClient::~TFTPClient() {
-    if (clientHandler != nullptr) {
-        if (destroy_tftp_handler(&clientHandler) != TFTP_OK) {
-            //TODO: inform error
+TFTPClient::~TFTPClient()
+{
+    if (clientHandler != nullptr)
+    {
+        if (destroy_tftp_handler(&clientHandler) != TFTP_OK)
+        {
+            // TODO: inform error
         }
     }
 }
 
 TftpClientOperationResult TFTPClient::setConnection(
-        const char *host,
-        const int port
-) {
-    if (clientHandler == nullptr) {
+    const char *host,
+    const int port)
+{
+    if (clientHandler == nullptr)
+    {
         return TftpClientOperationResult::TFTP_CLIENT_ERROR;
     }
 
     TftpOperationResult result = set_connection(
-            clientHandler,
-            host,
-            port
-    );
+        clientHandler,
+        host,
+        port);
 
-    if (result != TFTP_OK) {
+    if (result != TFTP_OK)
+    {
         return TftpClientOperationResult::TFTP_CLIENT_ERROR;
     }
 
     result = config_tftp(clientHandler);
 
-    return result == TFTP_OK ?
-           TftpClientOperationResult::TFTP_CLIENT_OK :
-           TftpClientOperationResult::TFTP_CLIENT_ERROR;
+    return result == TFTP_OK ? TftpClientOperationResult::TFTP_CLIENT_OK : TftpClientOperationResult::TFTP_CLIENT_ERROR;
+}
+
+TftpClientOperationResult TFTPClient::setTftpOption(
+    TftpClientOption option,
+    std::string value)
+{
+    TftpOperationResult result;
+    switch (option)
+    {
+    case TftpClientOption::TFTP_CLIENT_BLOCKSIZE_OPTION:
+        result = set_tftp_option(clientHandler, TFTP_BLOCKSIZE_OPTION, value.c_str());
+        break;
+    case TftpClientOption::TFTP_CLIENT_PORT_OPTION:
+        result = set_tftp_option(clientHandler, TFTP_PORT_OPTION, value.c_str());
+        break;
+    default:
+        result = TFTP_ERROR;
+        break;
+    }
+
+    if (result == TFTP_ERROR)
+    {
+        return TftpClientOperationResult::TFTP_CLIENT_ERROR;
+    }
+    
+    result = config_tftp(clientHandler);
+
+    return result == TFTP_OK ? TftpClientOperationResult::TFTP_CLIENT_OK : TftpClientOperationResult::TFTP_CLIENT_ERROR;
 }
 
 TftpClientOperationResult TFTPClient::registerTftpErrorCallback(
-        tftpErrorCallback callback,
-        void *context)
+    tftpErrorCallback callback,
+    void *context)
 {
     _tftpErrorCallback = callback;
     tftpErrorCtx = context;
@@ -62,46 +97,55 @@ TftpClientOperationResult TFTPClient::registerTftpErrorCallback(
 }
 
 TftpClientOperationResult TFTPClient::registerTftpFetchDataReceivedCallback(
-        tftpfetchDataReceivedCallback callback,
-        void *context)
+    tftpfetchDataReceivedCallback callback,
+    void *context)
 {
     _tftpFetchDataReceivedCallback = callback;
     tftpFetchDataReceivedCtx = context;
     return TftpClientOperationResult::TFTP_CLIENT_OK;
 }
 
+TftpClientOperationResult TFTPClient::registerTftpOptionAcceptedCallback(
+    tftpOptionAcceptedCallback callback,
+    void *context)
+{
+    _tftpOptionAcceptedCallback = callback;
+    tftpOptionAcceptedCtx = context;
+    return TftpClientOperationResult::TFTP_CLIENT_OK;
+}
+
 TftpClientOperationResult TFTPClient::sendFile(
-        const char *filename,
-        FILE *fp
-) {
-    if (clientHandler == nullptr) {
+    const char *filename,
+    FILE *fp)
+{
+    if (clientHandler == nullptr)
+    {
         return TftpClientOperationResult::TFTP_CLIENT_ERROR;
     }
-    return send_file(clientHandler, filename, fp) == TFTP_OK ?
-           TftpClientOperationResult::TFTP_CLIENT_OK :
-           TftpClientOperationResult::TFTP_CLIENT_ERROR;
+    return send_file(clientHandler, filename, fp) == TFTP_OK ? TftpClientOperationResult::TFTP_CLIENT_OK : TftpClientOperationResult::TFTP_CLIENT_ERROR;
 }
 
 TftpClientOperationResult TFTPClient::fetchFile(
-        const char *filename,
-        FILE *fp
-) {
-    if (clientHandler == nullptr) {
+    const char *filename,
+    FILE *fp)
+{
+    if (clientHandler == nullptr)
+    {
         return TftpClientOperationResult::TFTP_CLIENT_ERROR;
     }
-    return fetch_file(clientHandler, filename, fp) == TFTP_OK ?
-           TftpClientOperationResult::TFTP_CLIENT_OK :
-           TftpClientOperationResult::TFTP_CLIENT_ERROR;
+    return fetch_file(clientHandler, filename, fp) == TFTP_OK ? TftpClientOperationResult::TFTP_CLIENT_OK : TftpClientOperationResult::TFTP_CLIENT_ERROR;
 }
 
-TftpOperationResult TFTPClient::tftpErrorCbk (
-        short error_code,
-        const char *error_message,
-        void *context)
+TftpOperationResult TFTPClient::tftpErrorCbk(
+    short error_code,
+    const char *error_message,
+    void *context)
 {
-    if (context != NULL) {
-        TFTPClient *client = (TFTPClient *) context;
-        if (client->_tftpErrorCallback != nullptr) {
+    if (context != NULL)
+    {
+        TFTPClient *client = (TFTPClient *)context;
+        if (client->_tftpErrorCallback != nullptr)
+        {
             std::string errorMessage(error_message);
             client->_tftpErrorCallback(error_code, errorMessage,
                                        client->tftpErrorCtx);
@@ -111,15 +155,37 @@ TftpOperationResult TFTPClient::tftpErrorCbk (
     return TFTP_ERROR;
 }
 
-TftpOperationResult TFTPClient::tftpFetchDataReceivedCbk (
-        int data_size,
-        void *context)
+TftpOperationResult TFTPClient::tftpFetchDataReceivedCbk(
+    int data_size,
+    void *context)
 {
-    if (context != NULL) {
-        TFTPClient *client = (TFTPClient *) context;
-        if (client->_tftpFetchDataReceivedCallback != nullptr) {
-            client->_tftpFetchDataReceivedCallback(data_size, 
+    if (context != NULL)
+    {
+        TFTPClient *client = (TFTPClient *)context;
+        if (client->_tftpFetchDataReceivedCallback != nullptr)
+        {
+            client->_tftpFetchDataReceivedCallback(data_size,
                                                    client->tftpFetchDataReceivedCtx);
+            return TFTP_OK;
+        }
+    }
+    return TFTP_ERROR;
+}
+
+TftpOperationResult TFTPClient::tftpOptionAcceptedCbk(
+    char *option,
+    char *value,
+    void *context)
+{
+    if (context != NULL)
+    {
+        TFTPClient *client = (TFTPClient *)context;
+        if (client->_tftpOptionAcceptedCallback != nullptr)
+        {
+            std::string optionName(option);
+            std::string optionValue(value);
+            client->_tftpOptionAcceptedCallback(optionName, optionValue,
+                                                client->tftpOptionAcceptedCtx);
             return TFTP_OK;
         }
     }

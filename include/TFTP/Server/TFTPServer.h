@@ -10,112 +10,112 @@
 /**
  * @brief TFTP server implementation.
  */
-class TFTPServer : public ITFTPServer {
+class TFTPServer : public ITFTPServer
+{
 public:
-    TFTPServer();
-    virtual ~TFTPServer();
+        TFTPServer();
+        virtual ~TFTPServer();
 
-    TftpServerOperationResult setPort(
-            const int port
-    ) override;
+        TftpServerOperationResult setPort(
+            const int port) override;
 
-    TftpServerOperationResult setTimeout(
-            const int timeout
-    ) override;
+        TftpServerOperationResult setTimeout(
+            const int timeout) override;
 
-    TftpServerOperationResult registerOpenFileCallback(
+        TftpServerOperationResult registerOpenFileCallback(
             openFileCallback callback,
-            void *context
-    ) override;
+            void *context) override;
 
-    TftpServerOperationResult registerCloseFileCallback(
+        TftpServerOperationResult registerCloseFileCallback(
             closeFileCallback callback,
-            void *context
-    ) override;
+            void *context) override;
 
-    TftpServerOperationResult registerSectionStartedCallback(
+        TftpServerOperationResult registerSectionStartedCallback(
             sectionStartedCallback callback,
-            void *context
-    ) override;
+            void *context) override;
 
-    TftpServerOperationResult registerSectionFinishedCallback(
+        TftpServerOperationResult registerSectionFinishedCallback(
             sectionFinishedCallback callback,
-            void *context
-    ) override;
+            void *context) override;
 
-    TftpServerOperationResult startListening() override;
+        TftpServerOperationResult registerOptionReceivedCallback(
+            optionReceivedCallback callback,
+            void *context) override;
 
-    TftpServerOperationResult stopListening() override;
+        TftpServerOperationResult startListening() override;
+
+        TftpServerOperationResult stopListening() override;
 
 private:
-
-    static TftpdOperationResult sectionStartedCbk (
+        static TftpdOperationResult sectionStartedCbk(
             const TftpdSectionHandlerPtr sectionHandler,
-            void *context
-    );
+            void *context);
 
-    static TftpdOperationResult sectionFinishedCbk (
+        static TftpdOperationResult sectionFinishedCbk(
             const TftpdSectionHandlerPtr sectionHandler,
-            void *context
-    );
+            void *context);
 
-    static TftpdOperationResult openFileCbk (
+        static TftpdOperationResult openFileCbk(
             const TftpdSectionHandlerPtr section_handler,
             FILE **fd,
             char *filename,
             char *mode,
             size_t *fileSize,
-            void *context
-    );
+            void *context);
 
-    static TftpdOperationResult closeFileCbk (
+        static TftpdOperationResult closeFileCbk(
             const TftpdSectionHandlerPtr section_handler,
             FILE *fd,
-            void *context
-    );
+            void *context);
 
-    TftpdHandlerPtr serverHandler;
+        static TftpdOperationResult optionReceivedCbk(
+                const TftpdSectionHandlerPtr section_handler,
+                char *option,
+                char *value,
+                void *context);
 
-    void *openFileCtx;
-    openFileCallback _openFileCallback;
+        TftpdHandlerPtr serverHandler;
 
-    void *closeFileCtx;
-    closeFileCallback _closeFileCallback;
+        void *openFileCtx;
+        openFileCallback _openFileCallback;
 
-    void *sectionStartedCtx;
-    sectionStartedCallback _sectionStartedCallback;
+        void *closeFileCtx;
+        closeFileCallback _closeFileCallback;
 
-    void *sectionFinishedCtx;
-    sectionFinishedCallback _sectionFinishedCallback;
+        void *sectionStartedCtx;
+        sectionStartedCallback _sectionStartedCallback;
+
+        void *sectionFinishedCtx;
+        sectionFinishedCallback _sectionFinishedCallback;
+
+        void *optionReceivedCtx;
+        optionReceivedCallback _optionReceivedCallback;
 };
 
 /**
  * @brief TFTP section implementation.
  */
-class TFTPSection : public ITFTPSection {
+class TFTPSection : public ITFTPSection
+{
 public:
-    friend TFTPServer;
-    ~TFTPSection() = default;
+        friend TFTPServer;
+        ~TFTPSection() = default;
 
-    TftpServerOperationResult getSectionId(
-            TftpSectionId *id
-    ) override;
+        TftpServerOperationResult getSectionId(
+            TftpSectionId *id) override;
 
-    TftpServerOperationResult getClientIp(
-            std::string &ip
-    ) override;
+        TftpServerOperationResult getClientIp(
+            std::string &ip) override;
 
-    TftpServerOperationResult getSectionStatus(
-            TftpServerSectionStatus *status
-    ) override;
+        TftpServerOperationResult getSectionStatus(
+            TftpServerSectionStatus *status) override;
 
-    TftpServerOperationResult setErrorMessage(
-            std::string &error_message
-    ) override;
+        TftpServerOperationResult setErrorMessage(
+            std::string &error_message) override;
 
 private:
-    TFTPSection(const TftpdSectionHandlerPtr sectionHandler);
-    TftpdSectionHandlerPtr sectionHandler;
+        TFTPSection(const TftpdSectionHandlerPtr sectionHandler);
+        TftpdSectionHandlerPtr sectionHandler;
 };
 
-#endif //TFTPSERVER_H
+#endif // TFTPSERVER_H
