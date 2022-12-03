@@ -1,6 +1,6 @@
 # TransferManager
 
-This is a generic library for transferring data between two endpoints.
+This is a generic library for transferring data between two endpoints. Check the [documentation](https://tcc-pes-2022.github.io/TransferManager/)
 
 This repository is part of project [ARIEL](https://github.com/TCC-PES-2022).
 
