@@ -1,0 +1,9 @@
+var searchData=
+[
+  ['registerclosefilecallback_7',['registerCloseFileCallback',['../class_i_t_f_t_p_server.html#a170b6ba0370147afb1e5f553c1c8acb6',1,'ITFTPServer::registerCloseFileCallback()'],['../class_t_f_t_p_server.html#a79bcfd11465316328ea16d89ea638f28',1,'TFTPServer::registerCloseFileCallback()']]],
+  ['registeropenfilecallback_8',['registerOpenFileCallback',['../class_i_t_f_t_p_server.html#a1c0a3c9b0cb06a5e4d22f6a6e999a950',1,'ITFTPServer::registerOpenFileCallback()'],['../class_t_f_t_p_server.html#a0d52d94efcc57913331700a9e3ba31d5',1,'TFTPServer::registerOpenFileCallback()']]],
+  ['registersectionfinishedcallback_9',['registerSectionFinishedCallback',['../class_i_t_f_t_p_server.html#aceff322df34d92c70ccfe542f148743c',1,'ITFTPServer::registerSectionFinishedCallback()'],['../class_t_f_t_p_server.html#ace0ed291a815b059c0b2a9b0d8515542',1,'TFTPServer::registerSectionFinishedCallback()']]],
+  ['registersectionstartedcallback_10',['registerSectionStartedCallback',['../class_i_t_f_t_p_server.html#a4556c2a3d18b7c787afd6ecb1fb4e2c0',1,'ITFTPServer::registerSectionStartedCallback()'],['../class_t_f_t_p_server.html#a145db71d74e75ebe6aac5e4d6fd40b24',1,'TFTPServer::registerSectionStartedCallback()']]],
+  ['registertftperrorcallback_11',['registerTftpErrorCallback',['../class_i_t_f_t_p_client.html#a5101eb00f037df3f641203304eb498fc',1,'ITFTPClient::registerTftpErrorCallback()'],['../class_t_f_t_p_client.html#ae34d7df0b98fdc6d0150dd434093a40d',1,'TFTPClient::registerTftpErrorCallback()']]],
+  ['registertftpfetchdatareceivedcallback_12',['registerTftpFetchDataReceivedCallback',['../class_i_t_f_t_p_client.html#ae55bfcdc3d6d879d39227087a234fe2e',1,'ITFTPClient::registerTftpFetchDataReceivedCallback()'],['../class_t_f_t_p_client.html#a8c37a2f1da85e1f604d1b5aae743f584',1,'TFTPClient::registerTftpFetchDataReceivedCallback()']]]
+];
